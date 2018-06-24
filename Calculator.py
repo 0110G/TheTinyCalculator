@@ -92,22 +92,26 @@ def blink_cell_on_hover (mouse) :
 		return 1
 
 def calculator_display(message) :
-	message_display(message,40,120,30)
+	message_display(message,40,130,35)
 
 def check_validity(expression):
 	l = len(expression)
 	status = True
 	if expression[0] == '*' or expression[0] == '/' :
-		return True
+		return False
+	if expression[l-1] in ('+','*','-','/'):
+		return False
 	for i in range (l) :
 		if expression[i] <= '9' and expression[i] >= '0' :
 			continue
 		else :
 
-			if expression[i] == '+' and expression[i+1] in ('*','/'):
+			if expression[i] == '+' and (expression[i+1] in ('*','/') or (expression[i+1]=='+' and expression[i+2] == '+')):
 				return False
-			elif expression[1] == '-' and expression[i+1] in ('*','/'):
+			elif expression[i] == '-' and expression[i+1] in ('*','/'):
 				return False
+			elif expression[i] in ('*','/') and expression[i+1] in ('*','/') :
+				return False 
 			elif expression[i] == '.':
 				if expression[i+1] in ('+','-','*','/','.'):
 					return False
@@ -115,11 +119,13 @@ def check_validity(expression):
 					if status == True :
 						status = False
 					else :
-						return False
+						return 0,0
 			else :
 				status = True
 	
 	return True
+
+
 
 
 pygame.init()
@@ -138,11 +144,17 @@ while True :
 			sys.exit()
 		if event.type == pygame.MOUSEBUTTONDOWN :
 			if event.button == 1:
+				if num1 == 'Error' :
+					num1 = ''
 				if get_cell_position(mouse) == 0:
 					continue
 				elif cell_value[(x,y)] == '=': 
 					if check_validity(num1) :
-						num1 = str(eval(num1,None,None))
+						num1 = eval(num1,None,None)
+						if num1%1 != 0 :
+							num1 = float("{0:.5f}".format(num1))
+						else :
+							num1 = str(num1)
 					else :
 						num1 = 'Error'
 					#x,y = get_cell_position(mouse)
